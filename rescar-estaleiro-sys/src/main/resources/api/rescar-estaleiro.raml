@@ -1,0 +1,443 @@
+#%RAML 1.0
+types:
+  AlterarEnderecoCommand:
+    type: object
+    properties:
+      cep?:
+        type: string
+      logradouro?:
+        type: string
+      numero?:
+        type: string
+      complemento?:
+        type: string
+      bairro?:
+        type: string
+      localidade?:
+        type: string
+      uf?:
+        type: string
+  UsuarioRepresentation:
+    type: object
+    properties:
+      id?:
+        type: string
+      email?:
+        type: string
+      nome?:
+        type: string
+      perfil?:
+        type: string
+      situacao?:
+        type: string
+      endereco?: EnderecoRepresentation
+  IncluirEnderecoCommand:
+    type: object
+    properties:
+      cep?:
+        type: string
+      logradouro?:
+        type: string
+      numero?:
+        type: string
+      complemento?:
+        type: string
+      bairro?:
+        type: string
+      localidade?:
+        type: string
+      uf?:
+        type: string
+  IncluirUsuarioCommand:
+    type: object
+    properties:
+      email:
+        type: string
+        minLength: 5
+        maxLength: 30
+        required: true
+      senha:
+        type: string
+        minLength: 6
+        maxLength: 128
+        required: true
+      nome:
+        type: string
+        minLength: 3
+        maxLength: 80
+        required: true
+      perfil:
+        type: string
+        required: true
+      endereco?: IncluirEnderecoCommand
+  AlterarEnderecoUsuarioCommand:
+    type: object
+    properties:
+      endereco?: AlterarEnderecoCommand
+  EnderecoRepresentation:
+    type: object
+    properties:
+      id?:
+        type: string
+      cep?:
+        type: string
+      logradouro?:
+        type: string
+      complemento?:
+        type: string
+      numero?:
+        type: string
+      bairro?:
+        type: string
+      localidade?:
+        type: string
+      uf?:
+        type: string
+  EfetuarLoginCommand:
+    type: object
+    properties:
+      email?:
+        type: string
+      senha?:
+        type: string
+  AlterarSituacaoUsuarioCommand:
+    type: object
+    properties:
+      situacao:
+        type: string
+        required: true
+  AlterarPerfilUsuarioCommand:
+    type: object
+    properties:
+      perfil:
+        type: string
+        required: true
+  AlterarDadosPessoaisCommand:
+    type: object
+    properties:
+      email:
+        type: string
+        minLength: 5
+        maxLength: 30
+        required: true
+      senha:
+        type: string
+        minLength: 6
+        maxLength: 128
+        required: true
+      nome:
+        type: string
+        minLength: 3
+        maxLength: 80
+        required: true
+  IncluirEnderecoUsuarioCommand:
+    type: object
+    properties:
+      endereco?: IncluirEnderecoCommand
+  RegistrarUsuarioCommand:
+    type: object
+    properties:
+      email:
+        type: string
+        minLength: 5
+        maxLength: 30
+        required: true
+      senha:
+        type: string
+        minLength: 6
+        maxLength: 128
+        required: true
+      nome:
+        type: string
+        minLength: 3
+        maxLength: 80
+        required: true
+      perfil:
+        type: string
+        required: true
+      endereco?: IncluirEnderecoCommand
+annotationTypes:
+  amf-serverDescription:
+    type: any
+  amf-exclusiveMinimum:
+    type: any
+  amf-binding:
+    type: any
+  amf-pattern:
+    type: any
+  amf-payloads:
+    type: any
+  amf-exclusiveMaximum:
+    type: any
+  amf-consumes:
+    type: any
+  amf-additionalProperties:
+    type: any
+  amf-or:
+    type: any
+  amf-url:
+    type: any
+  amf-externalDocs:
+    type: any
+  amf-flow:
+    type: any
+  amf-oasDeprecated:
+    type: any
+  amf-contact:
+    type: any
+  amf-multipleOf:
+    type: any
+  amf-xor:
+    type: any
+  amf-not:
+    type: any
+  amf-callbacks:
+    type: any
+  amf-produces:
+    type: any
+  amf-format:
+    type: any
+  amf-license:
+    type: any
+  amf-summary:
+    type: any
+  amf-responses:
+    type: any
+  amf-maximum:
+    type: any
+  amf-tags:
+    type: any
+  amf-dependencies:
+    type: any
+  amf-readOnly:
+    type: any
+  amf-tuple:
+    type: any
+  amf-examples:
+    type: any
+  amf-collectionFormat:
+    type: any
+  amf-termsOfService:
+    type: any
+  amf-servers:
+    type: any
+  amf-xone:
+    type: any
+  amf-defaultResponse:
+    type: any
+  amf-baseUriParameters:
+    type: any
+  amf-parameters:
+    type: any
+  amf-minimum:
+    type: any
+  amf-recursive:
+    type: any
+  amf-and:
+    type: any
+securitySchemes:
+  Authorization:
+    type: http
+    settings: {}
+title: RESCAR - Acesso
+baseUri: http://localhost:8088
+(amf-serverDescription): Generated server url
+description: API de serviços
+version: Versão 1.0
+(amf-contact):
+  name: rodrigo.wisnievski@serpro.gov.br
+documentation:
+  -
+    content: Arquitetura de Referência Backend (DDD+Hexagonal)
+    title: https://dedat.gitpages.serpro/deat9/arquitetura-referencia-backend-ddd/
+/v1/usuarios/{id}:
+  get:
+    displayName: find
+    description: Obter Usuario por id
+    (amf-tags):
+      - usuario-resource
+    (amf-baseUriParameters):
+      id:
+        required: true
+        type: string
+    responses:
+      "200":
+        description: OK
+        body:
+          "*/*": UsuarioRepresentation
+    securedBy:
+      - Authorization
+  put:
+    displayName: update
+    description: Alterar Usuario
+    (amf-tags):
+      - usuario-resource
+    body:
+      application/json: AlterarDadosPessoaisCommand
+    (amf-baseUriParameters):
+      id:
+        required: true
+        type: string
+    responses:
+      "200":
+        description: OK
+    securedBy:
+      - Authorization
+/v1/usuarios/{id}/situacao:
+  put:
+    displayName: updateSituacao
+    description: Alterar Situacao Usuario
+    (amf-tags):
+      - usuario-resource
+    body:
+      application/json: AlterarSituacaoUsuarioCommand
+    responses:
+      "200":
+        description: OK
+    securedBy:
+      - Authorization
+  uriParameters:
+    id:
+      type: string
+/v1/usuarios/{id}/perfil:
+  put:
+    displayName: updatePerfil
+    description: Alterar Perfil Usuario
+    (amf-tags):
+      - usuario-resource
+    body:
+      application/json: AlterarPerfilUsuarioCommand
+    responses:
+      "200":
+        description: OK
+    securedBy:
+      - Authorization
+  uriParameters:
+    id:
+      type: string
+/v1/usuarios/{id}/endereco:
+  put:
+    displayName: updateEndereco
+    description: Alterar Endereco Usuario
+    (amf-tags):
+      - usuario-resource
+    body:
+      application/json: AlterarEnderecoUsuarioCommand
+    (amf-baseUriParameters):
+      id:
+        required: true
+        type: string
+    responses:
+      "200":
+        description: OK
+    securedBy:
+      - Authorization
+  post:
+    displayName: incluirEndereco
+    description: Incluir Endereco Usuario
+    (amf-tags):
+      - usuario-resource
+    body:
+      application/json: IncluirEnderecoUsuarioCommand
+    (amf-baseUriParameters):
+      id:
+        required: true
+        type: string
+    responses:
+      "200":
+        description: OK
+    securedBy:
+      - Authorization
+  delete:
+    displayName: removeEndereco
+    description: Apagar Endereco Usuario
+    (amf-tags):
+      - usuario-resource
+    (amf-baseUriParameters):
+      id:
+        required: true
+        type: string
+    responses:
+      "200":
+        description: OK
+    securedBy:
+      - Authorization
+/v1/usuarios:
+  get:
+    displayName: findAll
+    description: Listar usuarios
+    (amf-tags):
+      - usuario-resource
+    queryParameters:
+      perfil:
+        required: false
+        type: string
+    responses:
+      "200":
+        description: OK
+        body:
+          "*/*":
+            type: array
+            items: UsuarioRepresentation
+    securedBy:
+      - Authorization
+  post:
+    displayName: insert
+    description: Incluir Usuario
+    (amf-tags):
+      - usuario-resource
+    body:
+      application/json: IncluirUsuarioCommand
+    responses:
+      "200":
+        description: OK
+    securedBy:
+      - Authorization
+/v1/usuarios/registro:
+  post:
+    displayName: register
+    description: Registrar Usuario
+    (amf-tags):
+      - usuario-resource
+    body:
+      application/json: RegistrarUsuarioCommand
+    responses:
+      "200":
+        description: OK
+/login:
+  post:
+    displayName: fakeLogin
+    (amf-tags):
+      - auth-resource
+    body:
+      application/json: EfetuarLoginCommand
+    responses:
+      "200":
+        description: OK
+/v1/cep:
+  get:
+    displayName: find_1
+    description: Busca dados de endereço pelo CEP em api externa
+    (amf-tags):
+      - cep-resource
+    queryParameters:
+      cep:
+        required: false
+        type: string
+    responses:
+      "200":
+        description: OK
+        body:
+          "*/*": EnderecoRepresentation
+    securedBy:
+      - Authorization
+/auth/refresh_token:
+  get:
+    displayName: refreshToken
+    (amf-tags):
+      - auth-resource
+    responses:
+      "200":
+        description: OK
+    securedBy:
+      - Authorization

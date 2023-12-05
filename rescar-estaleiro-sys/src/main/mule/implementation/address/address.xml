@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:circuit-breaker="http://www.mulesoft.org/schema/mule/circuit-breaker" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/circuit-breaker http://www.mulesoft.org/schema/mule/circuit-breaker/current/mule-circuit-breaker.xsd">
+	<flow name="Address-Flow" doc:id="2abe382c-56f3-4151-a1b8-03e213cc6f63" >
+		<flow-ref doc:name="Flow Reference" doc:id="d9e1d6ed-db4c-4717-8b33-bf3a36632b5c" name="post:\login:application\json:rescar-estaleiro-config"/>
+		<logger level="INFO" doc:name="Logger" doc:id="3ce95e42-f8a3-488a-bb26-19491fd95a6c" message="#[vars.access_token]"/>
+		<circuit-breaker:filter doc:name="Filter" doc:id="6f32c7d5-0f5f-4489-ab41-8a2e6dfd2614" config-ref="Circuit_breaker_Config"/>
+		<until-successful maxRetries="${api.config.retry}" doc:name="Until Successful" doc:id="2af30ade-e765-48de-9d3c-0817c53a3314" millisBetweenRetries="${api.config.wait}">
+			<try doc:name="Try" doc:id="898a7139-4816-4089-8b1b-f59e54db10cc" >
+				<http:request method="GET" doc:name="Request" doc:id="98966a50-e0fb-4ef1-a6ca-ecba74f9c537" config-ref="HTTP_Request_Rescar_configuration" path="/v1/cep">
+			<http:body><![CDATA[payload]]></http:body>
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	"Authorization" : vars.access_token
+}]]]></http:headers>
+			<http:query-params><![CDATA[#[output application/json
+---
+{
+	"cep" : vars.var_cep
+}]]]></http:query-params>
+		</http:request>
+				<remove-variable doc:name="Remove Variable" doc:id="d7569cb2-6cd8-47ef-ada0-db77068e3bcc" variableName="error_object"/>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue for Connectivity Faliures" doc:id="6d8f4ab6-5abd-4bb1-94ff-c5285ba4ea6e" when='#[error.errorType.identifier != "CONNECTIVITY"]'>
+						<logger level="INFO" doc:name="Logger" doc:id="d59d980a-da1f-4a03-90d7-7e833801d4e6" message="Not retrying since not a connectivity failure with error #[error.description] with correlation id #[correlationId]"/>
+						<ee:transform doc:name="Transform Message" doc:id="21caf6cf-1381-4b16-9fea-01ce1e1a209c" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+error]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</until-successful>
+		<logger level="INFO" doc:name="Logger" doc:id="61a5e678-30b7-493c-94f7-8f3f99d2ade4" message="payload"/>
+		<ee:transform doc:name="Transform Message" doc:id="f602f6ca-3cc1-40db-8565-d4e85a2543c3" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json skipNullOn="everywhere"
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="de5ec584-9899-46d5-81a9-0f4cbd9bf7fe" type="ANY">
+				<circuit-breaker:record-failure doc:name="Record failure" doc:id="e68475aa-381d-4ad0-b87d-ebb9355b6589" config-ref="Circuit_breaker_Config"/>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+</mule>

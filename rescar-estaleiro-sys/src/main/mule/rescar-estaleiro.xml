@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd ">
+    <http:listener-config name="rescar-estaleiro-httpListenerConfig">
+        <http:listener-connection host="0.0.0.0" port="8081" />
+    </http:listener-config>
+    <apikit:config name="rescar-estaleiro-config" api="rescar-estaleiro.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <flow name="rescar-estaleiro-main">
+        <http:listener config-ref="HTTP_Listener_config" path="/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:error-response>
+        </http:listener>
+		<ee:transform doc:name="Transform Message" doc:id="597bf48e-e35a-42d4-927b-ba3ee3def94e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+attributes]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="79443027-0830-44ab-b42f-4ef95e7b804f" message="#[attributes]"/>
+		<apikit:router config-ref="Router" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:BAD_REQUEST">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Bad request"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">400</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Method not allowed"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">405</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not acceptable"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">406</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Unsupported media type"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">415</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_IMPLEMENTED">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not Implemented"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">501</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="rescar-estaleiro-console">
+        <http:listener config-ref="rescar-estaleiro-httpListenerConfig" path="/console/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="rescar-estaleiro-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="put:\v1\usuarios\(id)\endereco:application\json:rescar-estaleiro-config">
+        <ee:transform doc:name="Transform Message">
+            <ee:variables>
+                <ee:set-variable variableName="id">attributes.uriParams.'id'</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <logger level="INFO" message="put:\v1\usuarios\(id)\endereco:application\json:rescar-estaleiro-config" />
+    </flow>
+    <flow name="put:\v1\usuarios\(id)\perfil:application\json:rescar-estaleiro-config">
+        <ee:transform doc:name="Transform Message">
+            <ee:variables>
+                <ee:set-variable variableName="id">attributes.uriParams.'id'</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <logger level="INFO" message="put:\v1\usuarios\(id)\perfil:application\json:rescar-estaleiro-config" />
+    </flow>
+    <flow name="put:\v1\usuarios\(id)\situacao:application\json:rescar-estaleiro-config">
+        <ee:transform doc:name="Transform Message">
+            <ee:variables>
+                <ee:set-variable variableName="id">attributes.uriParams.'id'</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <logger level="INFO" message="put:\v1\usuarios\(id)\situacao:application\json:rescar-estaleiro-config" />
+    </flow>
+    <flow name="put:\v1\usuarios\(id):application\json:rescar-estaleiro-config">
+        <ee:transform doc:name="Transform Message">
+            <ee:variables>
+                <ee:set-variable variableName="id">attributes.uriParams.'id'</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <logger level="INFO" message="put:\v1\usuarios\(id):application\json:rescar-estaleiro-config" />
+    </flow>
+    <flow name="delete:\v1\usuarios\(id)\endereco:rescar-estaleiro-config">
+        <ee:transform doc:name="Transform Message">
+            <ee:variables>
+                <ee:set-variable variableName="id">attributes.uriParams.'id'</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <logger level="INFO" message="delete:\v1\usuarios\(id)\endereco:rescar-estaleiro-config" />
+    </flow>
+    <flow name="get:\auth\refresh_token:rescar-estaleiro-config">
+        <logger level="INFO" message="get:\auth\refresh_token:rescar-estaleiro-config" />
+    </flow>
+    <flow name="get:\v1\cep:rescar-estaleiro-config">
+        <logger level="INFO" doc:name="Start" doc:id="017ea09d-52f8-46eb-90f0-e8acbc0be24d" message='#["CEP: " ++ attributes.queryParams.cep]'/>
+		<set-variable value="#[attributes.queryParams.cep]" doc:name="CEP" doc:id="4d2f44ec-ea39-4db6-b689-3bd82bc60fae" variableName="var_cep"/>
+		<flow-ref doc:name="Flow Reference" doc:id="4f4f430b-728c-419d-b168-1e51ba691612" name="Address-Flow"/>
+		<logger level="INFO" message="#[&quot;Endereço localizado: &quot; ++ 'payload=' ++ write(payload, 'application/json', {indent: false})]" doc:name="End"/>
+    </flow>
+    <flow name="get:\v1\usuarios:rescar-estaleiro-config" doc:id="b24efc51-fa1f-421c-a586-247b9b6dc75e">
+		<logger level="INFO" doc:name="Logger" doc:id="0a930139-c99f-4df8-8936-0afcb87e1d3d" message='#["Perfil:" ++ attributes.queryParams.Description]'/>
+		<flow-ref doc:name="Flow Reference" doc:id="657ffb53-6b43-4f8b-9f8c-0834ec5c550b" name="List-All-Users-Flow" />
+		<logger level="INFO" doc:name="Logger" doc:id="9954892a-9ee0-4c03-ba69-403a8d74f7d4" message="#['payload=' ++ write(payload, 'application/json', {indent: false})]"/>
+    </flow>
+    <flow name="get:\v1\usuarios\(id):rescar-estaleiro-config">
+        <ee:transform doc:name="Transform Message">
+            <ee:variables>
+                <ee:set-variable variableName="id">attributes.uriParams.'id'</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <logger level="INFO" message="get:\v1\usuarios\(id):rescar-estaleiro-config" />
+    </flow>
+    <flow name="post:\login:application\json:rescar-estaleiro-config" doc:id="79f4b970-d273-4105-bed7-a883edf4b4e4">
+        <logger level="INFO" doc:name="Start" doc:id="4e53ab9b-9f2b-4b68-8031-92d44ac3587f" message="#[attributes.queryParams]" />
+		<flow-ref doc:name="Flow Reference" doc:id="1ecdbb58-b4ee-46c1-a43a-3cd07cf075fb" name="Authenticator-Flow"/>
+		<logger level="INFO" message="#[vars.access_token]" doc:name="End"/>
+    </flow>
+    <flow name="post:\v1\usuarios\registro:application\json:rescar-estaleiro-config">
+        <logger level="INFO" doc:name="Start" doc:id="ba20695c-c935-4391-9c1b-e56f3c1520a3" message="Start"/>
+		<logger level="INFO" message="End" doc:name="End"/>
+    </flow>
+    <flow name="post:\v1\usuarios\(id)\endereco:application\json:rescar-estaleiro-config">
+		<ee:transform doc:name="Transform Message">
+            <ee:variables>
+                <ee:set-variable variableName="id">attributes.uriParams.'id'</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <logger level="INFO" message="post:\v1\usuarios\(id)\endereco:application\json:rescar-estaleiro-config" />
+    </flow>
+    <flow name="post:\v1\usuarios:application\json:rescar-estaleiro-config">
+        <logger level="INFO" message="post:\v1\usuarios:application\json:rescar-estaleiro-config" />
+    </flow>
+</mule>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd">
+	<configuration-properties doc:name="Configuration properties" doc:id="7bc8b4f3-900a-44b8-a289-187dfb9874b7" file="properties\parameters.yaml" />
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="10ac060f-501e-4b3a-b29f-15f4ae4e8058" basePath="${listener.basepath}">
+		<http:listener-connection host="${listener.host}" port="${listener.port}" />
+	</http:listener-config>
+	<apikit:config outboundHeadersMapName="outboundHeadersMapName" httpStatusVarName="httpStatus" doc:name="Router" doc:id="b233aefd-81a9-49bb-bd36-e21d10359c69" name="Router" api="api\rescar-estaleiro-exp.raml">
+		<apikit:flow-mappings >
+			<apikit:flow-mapping resource="/v1/zip-code" action="get" flow-ref="get:\v1\zip-code:rescar-estaleiro-exp-config" />
+			<apikit:flow-mapping resource="/v1/users" action="get" flow-ref="get:\v1\users:rescar-estaleiro-exp-config" />
+		</apikit:flow-mappings>
+	</apikit:config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="115825a3-9bf9-4567-8ea9-fa07eb4eba33" basePath="${request.rescar-estaleiro-sys.basepath}">
+		<http:request-connection port="${request.rescar-estaleiro-sys.port}" host="${request.rescar-estaleiro-sys.host}"/>
+	</http:request-config>
+</mule>

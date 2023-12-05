@@ -1,0 +1,23 @@
+listener:
+  basepath: "/rescar-estaleiro-exp"
+  host: "localhost"
+  port: "8087"
+#  timeout: "30000"
+
+request:
+
+  rescar-estaleiro-sys:
+
+    host: "localhost"
+    port: "8090"
+    basepath: "/rescar-estaleiro"
+
+    listarUsuarios:
+      path: "/v1/usuarios"
+      wait: "5000"
+      retry: "0"
+      
+    consultaCEP:
+      path: "/v1/cep"
+      wait: "5000"
+      retry: "0"

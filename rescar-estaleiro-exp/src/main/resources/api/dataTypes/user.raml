@@ -1,0 +1,30 @@
+#%RAML 1.0 DataType
+
+
+type: object
+properties:
+  id:
+    required: true
+    type: string
+  email:
+    minLength: 5
+    maxLength: 30
+    required: true
+    type: string
+  password:
+    minLength: 6
+    maxLength: 128
+    required: true
+    type: string
+  name:
+    minLength: 3
+    maxLength: 80
+    required: true
+    type: string
+  profile:
+    type: string
+  situation:
+    type: string
+  address:
+    type: !include address.raml
+    

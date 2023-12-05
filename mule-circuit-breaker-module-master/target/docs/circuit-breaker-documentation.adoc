@@ -1,0 +1,95 @@
+:toc:               left
+:toc-title:         Circuit-breaker Module
+:toclevels:         2
+:last-update-label!:
+:docinfo:
+:source-highlighter: coderay
+:icons: font
+
+
+= Circuit-breaker Module Documentation Reference
+
++++
+This is the main class of an extension, is the entry point from which configurations, connection providers, operations and sources are going to be declared.
++++
+
+
+== Configurations
+---
+[[config]]
+=== Config
+
++++
+Default configuration
++++
+
+==== Parameters
+[cols=".^20%,.^20%,.^35%,.^20%,^.^5%", options="header"]
+|======================
+| Name | Type | Description | Default Value | Required
+|Name | String | The name for this configuration. Connectors reference the configuration with this name. | | *x*{nbsp}
+| Threshold a| Number |  |  | *x*{nbsp}
+| Timeout a| Number |  |  | *x*{nbsp}
+| Breaker Name a| String |  |  | *x*{nbsp}
+| Expiration Policy a| <<ExpirationPolicy>> |  +++Configures the minimum amount of time that a dynamic configuration instance can remain idle before the runtime considers it eligible for expiration. This does not mean that the platform will expire the instance at the exact moment that it becomes eligible. The runtime will actually purge the instances when it sees it fit.+++ |  | {nbsp}
+|======================
+
+
+==== Associated Operations
+* <<filter>> {nbsp}
+* <<recordFailure>> {nbsp}
+
+
+
+== Operations
+
+[[filter]]
+=== Filter
+`<circuit-breaker:filter>`
+
++++
+Filter the message if the failures' threshold has been met. In other words Circuit Breaker has been opened and no new messages are allowed to pass further.
++++
+
+
+
+==== For Configurations.
+* <<config>> {nbsp}
+
+
+
+[[recordFailure]]
+=== Record Failure
+`<circuit-breaker:record-failure>`
+
++++
+Record one more failure by saving it in Object Store
++++
+
+
+
+==== For Configurations.
+* <<config>> {nbsp}
+
+
+
+
+== Types
+[[ExpirationPolicy]]
+=== Expiration Policy
+
+[cols=".^20%,.^25%,.^30%,.^15%,.^10%", options="header"]
+|======================
+| Field | Type | Description | Default Value | Required
+| Max Idle Time a| Number | A scalar time value for the maximum amount of time a dynamic configuration instance should be allowed to be idle before it's considered eligible for expiration |  | 
+| Time Unit a| Enumeration, one of:
+
+** NANOSECONDS
+** MICROSECONDS
+** MILLISECONDS
+** SECONDS
+** MINUTES
+** HOURS
+** DAYS | A time unit that qualifies the maxIdleTime attribute |  | 
+|======================
+

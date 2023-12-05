@@ -1,0 +1,188 @@
+#%RAML 1.0
+title: rescar-estaleiro-exp
+types:
+  userType: !include dataTypes/user.raml
+  situationType: !include dataTypes/situation.raml
+  profileType: !include dataTypes/profile.raml
+  addressType: !include dataTypes/address.raml
+
+mediaType: 
+- application/json
+version: v1
+protocols:
+  - HTTPS
+  - HTTP
+
+/v1/users:
+    displayName: Get users
+    description: Get all informations of user
+    get:
+      displayName: find
+      description: Search all users
+      responses:
+        200:
+          body:
+            application/json:
+#              example: usuarioType
+  
+/{id}:
+    uriParameters:
+      id:
+        type: string
+        required: true
+
+    get:
+      displayName: find
+      description: Search user or by id
+      responses:
+        200:
+          body:
+            application/json:
+#              example: !include examples/getUser.raml
+
+    post:
+      displayName: insert
+      description: Incluir Usuario
+      body:
+        application/json:
+          type: userType    
+      responses:
+        200:
+          body:
+            application/json:
+              example: | 
+                {
+                  "message" : "User created successfully"
+                }
+
+    put:
+      displayName: Update user
+      description: Update user information by Id
+      body:
+        application/json:
+          type: userType    
+      responses:
+        200:
+          body:
+            application/json:
+              example: | 
+                {
+                  "message" : "User updated successfully"
+                }
+    
+/v1/users/{id}/situation:
+  put:
+      displayName: Update situation
+      description: Update situation information by Id
+      body:
+        application/json:
+          type: situationType    
+      responses:
+        200:
+          body:
+            application/json:
+              example: | 
+                {
+                  "message" : "Situation updated successfully"
+                }
+
+/v1/users/{id}/profile:
+  put:
+      displayName: Update profile
+      description: Update profile information by Id
+      body:
+        application/json:
+          type: profileType    
+      responses:
+        200:
+          body:
+            application/json:
+              example: | 
+                {
+                  "message" : "Profile updated successfully"
+                }
+
+/v1/users/{id}/address:
+  put:
+      displayName: updateEndereco
+      description: Alterar Endereco Usuario
+      body:
+        application/json:
+          type: addressType   
+      responses:
+        200:
+          body:
+            application/json:
+              example: | 
+                {
+                  "message" : "Address updated successfully"
+                }
+  post:
+    displayName: incluirEndereco
+    description: Incluir Endereco Usuario
+    body:
+      application/json:
+        type: addressType
+          
+    responses:
+      201:
+        body:
+          application/json: 
+            example: |
+              {
+                "message" : "Address created successfully"
+              }
+  /{id}:
+    displayName: getAddressUser
+    description: Get address user information by Id
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+  
+    delete:
+      displayName: removeEndereco
+      description: Apagar Endereco Usuario
+      responses:
+        200:
+          body:
+            application/json:
+              example: | 
+                {
+                  "message" : "Address user deleted successfully"
+                }
+
+/v1/users/register:
+  post:
+    displayName: register
+    description: Registrar Usuario
+    body:
+      application/json:
+        type: userType
+          
+    responses:
+      201:
+        body:
+          application/json: 
+            example: |
+              {
+                "message" : "User created successfully"
+              }
+
+
+/v1/zip-code: 
+
+    get:
+      displayName: searchAddress
+      description: Search address address information by zip-code
+      responses:
+        200:
+          body:
+            application/json:
+#              example: usuarioType
+
+
+/heath-check:
+    get:
+      displayName: Heath Check

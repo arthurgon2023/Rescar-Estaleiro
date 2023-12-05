@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:circuit-breaker="http://www.mulesoft.org/schema/mule/circuit-breaker" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd
+http://www.mulesoft.org/schema/mule/circuit-breaker http://www.mulesoft.org/schema/mule/circuit-breaker/current/mule-circuit-breaker.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="e0b88880-be73-483a-a76f-9f306c4a836d" basePath="${api.config.basepath}" >
+		<http:listener-connection host="0.0.0.0" port="${api.config.port}"/>
+	</http:listener-config>
+	<configuration-properties doc:name="Configuration properties" doc:id="f3200ccd-2fcf-4442-84ad-6bb659a54b59" file="parameters.yaml" />
+	<apikit:config outboundHeadersMapName="outboundHeadersMapName" httpStatusVarName="httpStatus" doc:name="Router" doc:id="782e0fe3-12a3-40bd-bac1-d1c1826c9f5c" name="Router" api="api\rescar-estaleiro.raml" >
+		<apikit:flow-mappings >
+			<apikit:flow-mapping resource="/v1/cep" action="get" flow-ref="get:\v1\cep:rescar-estaleiro-config" />
+			<apikit:flow-mapping resource="/v1/usuarios" action="get" flow-ref="get:\v1\usuarios:rescar-estaleiro-config" />
+			<apikit:flow-mapping resource="/login" action="post" content-type="application/json" flow-ref="post:\login:application\json:rescar-estaleiro-config" />
+		</apikit:flow-mappings>
+	</apikit:config>
+	<http:request-config name="HTTP_Request_Rescar_configuration" doc:name="HTTP Request configuration" doc:id="a24ef18f-96c5-4061-b739-a543dd6e6beb" >
+		<http:request-connection host="${rescar.config.host}" port="${rescar.config.port}" />
+	</http:request-config>
+	<configuration-properties doc:name="Configuration properties" doc:id="d8060293-7124-43b4-9909-ce240639e447" file="rescar-credentials.yaml" />
+	<circuit-breaker:config name="Circuit_breaker_Config" doc:name="Circuit-breaker Config" doc:id="fe56c11e-180e-446c-abf4-876bd3aab2cd" threshold="3" timeout="60000" breakerName="ConsentHTTPRequest" />
+</mule>

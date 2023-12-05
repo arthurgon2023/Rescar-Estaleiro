@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="list-all-usersFlow" doc:id="b864513d-5f64-4baa-a855-73d7c4e4b009" >
+		<http:request method="GET" doc:name="Request" doc:id="1306f534-f122-4003-ac46-f96107a19d27" config-ref="HTTP_Request_configuration" path="${request.rescar-estaleiro-sys.listarUsuarios.path}">
+			<http:query-params ><![CDATA[#[output application/json
+---
+{
+	
+	"Name" : attributes.queryParams.Name,
+	"Description" : attributes.queryParams.Description,
+	"email" : attributes.queryParams.email,
+	"senha" : attributes.queryParams.senha
+}]]]></http:query-params>
+		</http:request>
+		<logger level="INFO" doc:name="Logger" doc:id="12eb53ca-7fd8-4c51-b1d0-851754833832" message="#[payload]"/>
+		<ee:transform doc:name="Transform Message" doc:id="ccaf79f5-710e-4310-819c-eb4bd10cff0f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+users: payload map (
+    {
+        id: $.id,
+        name: $.nome,
+        email: $.email,
+        profile: $.perfil,
+        situation: $.situacao,
+
+        address: {
+            "zip-code": $.endereco.cep,
+            street: $.endereco.logradouro,
+            complement: $.endereco.complemento,
+            number: $.endereco.numero,
+            district: $.endereco.bairro,
+            city: $.endereco.localidade,
+            uf: $.endereco.uf
+        }
+    }
+)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

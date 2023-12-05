@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="Search-Address-Flow" doc:id="8be261c7-e0a6-4a92-90a2-277a46c42520" >
+		<set-variable value="#[attributes.queryParams.cep]" doc:name="ZIP CODE" doc:id="4ac83e13-a68b-4b07-bb5e-0910dc1af46c" variableName="varCode"/>
+		<http:request method="GET" doc:name="Request" doc:id="5665a815-fb14-4e7a-be65-fba09158b8b3" path="${request.rescar-estaleiro-sys.consultaCEP.path}" config-ref="HTTP_Request_configuration">
+			<http:query-params ><![CDATA[#[output application/json
+---
+{
+	"cep" : attributes.queryParams.cep,
+	"email" : attributes.queryParams.email,
+	"senha" : attributes.queryParams.senha
+}]]]></http:query-params>
+		</http:request>
+		<logger level="INFO" doc:name="Logger" doc:id="4e08f42b-086b-4e48-8ef5-da974a0eb47d" message="#[payload]"/>
+		<ee:transform doc:name="Transform Message" doc:id="a45a0f73-d9bf-48c2-938b-17f2347947ac" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+    "zip-code": payload.cep,
+    street: payload.logradouro,
+    complement: payload.complemento,
+    district: payload.bairro,
+    city: payload.localidade,
+    uf: payload.uf,
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

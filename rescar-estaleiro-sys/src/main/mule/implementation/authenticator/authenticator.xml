@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:circuit-breaker="http://www.mulesoft.org/schema/mule/circuit-breaker"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/circuit-breaker http://www.mulesoft.org/schema/mule/circuit-breaker/current/mule-circuit-breaker.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="Authenticator-Flow" doc:id="2a87972b-7ec5-4cd0-83d1-8a540733884f" >
+		<logger level="INFO" doc:name="Logger" doc:id="feca0f1c-5e2e-45bd-81d2-1278ac5afb47" message="#[payload]" />
+		<circuit-breaker:filter doc:name="Circuit Breaker Filter" doc:id="2f9031c1-be09-41c5-a7b5-c2598e926bd3" config-ref="Circuit_breaker_Config" />
+		<until-successful maxRetries="${api.config.retry}" doc:name="Until Successful" doc:id="ff760a61-b0ab-4f48-ba83-e05bc4b820ce" millisBetweenRetries="${api.config.wait}">
+			<try doc:name="Try" doc:id="0e5e2f21-1583-48df-ac92-2c61401b7a46" >
+				<http:request method="POST" doc:name="Request" doc:id="2a9d7e21-dc27-45ba-b6f2-815197a49269" config-ref="HTTP_Request_Rescar_configuration" path="/login" sendCorrelationId="ALWAYS" correlationId="correlationId">
+			<http:body><![CDATA[#[%dw 2.0
+output application/json
+---
+{
+  "email": attributes.queryParams.email,
+  "senha": attributes.queryParams.senha
+}]]]></http:body>
+		</http:request>
+				<remove-variable doc:name="Remove Variable" doc:id="a4cff115-5842-45bf-a94a-86688b375c29" variableName="error_object"/>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="7831afe5-c70d-4292-9e34-8ecac043c565" when='#[error.errorType.identifier != "CONNECTIVITY"]'>
+						<logger level="INFO" doc:name="Logger" doc:id="2b739c31-a767-43b1-a933-752e9bf2ba9a" message="Not retrying since not a connectivity failure with error #[error.description] with correlation id #[correlationId]"/>
+						<ee:transform doc:name="Transform Message" doc:id="609cff82-39dc-4cfd-8ffc-88c85980e254" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+error]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</until-successful>
+		<set-variable value="#[attributes.headers.authorization]" doc:name="Access Token" doc:id="2c3a9602-ca3a-40d7-aff7-1fcc9b3301a0" variableName="access_token"/>
+		<logger level="INFO" doc:name="Logger" doc:id="7dcc7906-c88b-4803-97c8-bb7d299c9b8f" message='#["Access Token: " ++ vars.access_token]'/>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="e3c8567b-013a-454e-8037-a6799ef38f69" type="ANY">
+				<circuit-breaker:record-failure doc:name="Record failure" doc:id="db6cd5df-1ef7-4e39-bff1-4ddbb9ead268" config-ref="Circuit_breaker_Config"/>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+</mule>
